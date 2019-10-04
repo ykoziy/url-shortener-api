@@ -10,10 +10,15 @@ exports.addUrl = (req, res) => {
 }
 
 exports.getFullUrl = (req, res) => {
+  let shortUrl = req.params.surl;
+  if(!parseInt(shortUrl, 10)) {
+    res.json({"error":"Wrong Format"});
+    return;
+  }
   // get: param from req.params.shorturl
   // check if correct type, a number
   // for response, redirect to full url
-  res.send('TODO: getFullUrl');
+  res.send('TODO: getFullUrl ' + shortUrl);
 }
 
 //  original_url: {type: String, required: true},      short_url: {type: Number, default: 1}
