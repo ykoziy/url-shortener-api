@@ -1,6 +1,6 @@
 const ShortUrl = require('../models/ShortUrl');
 
-exports.addUrl = (req, res) {
+exports.addUrl = (req, res) => {
   // get: url, from POST body
   // check if passed url is valid
   // If url does not exist add it
@@ -9,7 +9,7 @@ exports.addUrl = (req, res) {
   res.send('TODO: addUrl');
 }
 
-exports.getFullUrl = (req, res) {
+exports.getFullUrl = (req, res) => {
   // get: param from req.params.shorturl
   // check if correct type, a number
   // for response, redirect to full url
