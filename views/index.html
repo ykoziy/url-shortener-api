@@ -1,9 +1,23 @@
 <html>
 <head>
   <title>URL Shortener</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h3>Hello Wrld!!</h3>
+    <div class="content">
+        <h2>API Project: URL Shortener Microservice</h2>
+        <h3>Short URL Creation</h3>
+        <p>example: <code>[project_url]/api/shorturl/new</code> - <code>https://google.com</code></p>
+        <form action="api/shorturl/new" method="post" class="url-form">
+          <label for="url">URL to be shortened: </label>
+          <input type="url" name="url" placeholder="https://www.google.com/">
+          <input type="submit" value="POST URL">
+        </form>
+        <h3>Example Usage</h3>
+        <a href="">[this_project_url]/api/shorturl/3</a>
+        <h3>Will Redirect to:</h3>
+        <p>https://www.google.com/</p>
+    </div>
 </body>
 </html>
