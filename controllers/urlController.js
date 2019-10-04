@@ -1,24 +1,52 @@
 const ShortUrl = require('../models/ShortUrl');
+const isURL = require('validator').isURL;
+const dns = require('dns');
 
+
+const urlRegex = /^https?:\/\/(.*)/i;
 exports.addUrl = (req, res) => {
-  // get: url, from POST body
-  // check if passed url is valid
-  // If url does not exist add it
-  // otherwise add entry to the DB: {original_url, short_url}
-  // short_url <- auto increment field - {$inc: { short_url: 1}
-  res.send('TODO: addUrl');
+  let fullUrl = req.body.url;
+  if(!isURL(fullUrl)) {
+    res.json({"error":"invalid URL"});
+  } else {
+    let endSlash  = fullUrl.match(/(\/*)$/i);
+    fullUrl = fullUrl.replace(/(\/*)$/i,'');
+    let url = new URL(fullUrl);
+    dns.lookup(url.hostname, (err) => {
+      if(err) {
+        res.json({"error":"invalid Hostname"});
+      } else {
+        ShortUrl.findOne({original_url: fullUrl}, (err, data) => {
+          if (err) return;
+          if(data) {
+            res.json({"original_url": data.original_url, "short_url": data.short_url});
+          } else {
+            let newEntry = new ShortUrl({original_url: fullUrl});
+            newEntry.save((err, data) => {
+              if (err) return;
+              res.json({"original_url": data.original_url, "short_url": data.short_url});
+            });
+          }
+        });
+      }
+    });
+  }
 }
 
 exports.getFullUrl = (req, res) => {
   let shortUrl = req.params.surl;
   if(!parseInt(shortUrl, 10)) {
     res.json({"error":"Wrong Format"});
-    return;
+  } else {
+    ShortUrl.findOne({short_url: shortUrl}, (err, data) => {
+      if (err) return;
+      if(data) {
+        res.redirect(data.original_url);
+      } else {
+        res.json({"error":"No short url found"});
+      }
+    });
   }
-  // get: param from req.params.shorturl
-  // check if correct type, a number
-  // for response, redirect to full url
-  res.send('TODO: getFullUrl ' + shortUrl);
 }
 
 //  original_url: {type: String, required: true},      short_url: {type: Number, default: 1}
