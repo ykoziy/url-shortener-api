@@ -2,6 +2,18 @@ const ShortUrl = require('../models/ShortUrl');
 const isURL = require('validator').isURL;
 const dns = require('dns');
 
+const sendResponse = (res, data) => {
+  res.json({"original_url": data.original_url, "short_url": data.short_url});
+}
+
+const checkDns = (domain) => {
+  return new Promise((resolve, reject) => {
+    dns.lookup(domain, (err, addr) => {
+      if (err) return reject(err);
+      resolve(true);
+    });
+  });
+};
 
 const urlRegex = /^https?:\/\/(.*)/i;
 exports.addUrl = (req, res) => {
@@ -12,23 +24,25 @@ exports.addUrl = (req, res) => {
     let endSlash  = fullUrl.match(/(\/*)$/i);
     fullUrl = fullUrl.replace(/(\/*)$/i,'');
     let url = new URL(fullUrl);
-    dns.lookup(url.hostname, (err) => {
-      if(err) {
-        res.json({"error":"invalid Hostname"});
+    checkDns(url.hostname).then(() => {
+      return ShortUrl.findOne({original_url: fullUrl});
+    })
+    .then((data) => {
+      if(data) {
+          sendResponse(res, data);
       } else {
-        ShortUrl.findOne({original_url: fullUrl}, (err, data) => {
-          if (err) return;
-          if(data) {
-            res.json({"original_url": data.original_url, "short_url": data.short_url});
-          } else {
-            let newEntry = new ShortUrl({original_url: fullUrl});
-            newEntry.save((err, data) => {
-              if (err) return;
-              res.json({"original_url": data.original_url, "short_url": data.short_url});
-            });
-          }
-        });
+        let newEntry = new ShortUrl({original_url: fullUrl});
+        return newEntry.save();
       }
+    })
+    .then((data) => {
+      if (data) sendResponse(res, doc);
+    })
+    .catch((err) => {
+      if(err.code === 'ENOTFOUND') {
+        res.json({"error":"invalid Hostname"});
+      }
+      return;
     });
   }
 }
@@ -48,5 +62,3 @@ exports.getFullUrl = (req, res) => {
     });
   }
 }
-
-//  original_url: {type: String, required: true},      short_url: {type: Number, default: 1}
